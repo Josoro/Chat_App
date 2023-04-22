@@ -1,6 +1,9 @@
+import 'package:chat/domain/entities/message.dart';
+import 'package:chat/presentation/providers/chat_provider.dart';
 import 'package:chat/presentation/widgets/chat/her_message_bubble.dart';
 import 'package:chat/presentation/widgets/chat/my_message_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../widgets/shared/message_field_box.dart';
 
@@ -31,23 +34,28 @@ class _ChatView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chatProvider = context.watch<ChatProvider>();
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
           children: [
-            Expanded(child: ListView.builder(
-              itemCount: 100,
+            Expanded(
+                child: ListView.builder(
+                  controller: chatProvider.chatScrollController,
+              itemCount: chatProvider.messageList.length,
               itemBuilder: (context, index) {
-                return (index % 2 == 0)
-                ? const HerMessageBubble()
-                : const MyMessageBubble();
+                final message = chatProvider.messageList[index];
+
+                 return (message.fromWho == FromWho.her)
+                    ? HerMessageBubble(message: message,)
+                    :  MyMessageBubble(messages: message,);
               },
-            )
-            ),
+            )),
 
             //Caja de Texto de mensajes
-            const MessageFieldBox()
+        MessageFieldBox(onValue: (value)=> chatProvider.sendMessage(value))
           ],
         ),
       ),
